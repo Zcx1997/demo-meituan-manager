@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <script src="js/jquery-3.6.0.js"></script>
+    <script src="js/popper.js"></script>
+    <script src="js/bootstrap.js"></script>
+</head>
+<style>
+    *{
+        list-style: none;
+    }
+</style>
+<body>
+
+<script>
+    $(function () {
+        function a(){
+            $.ajax({
+                url:'getAll',
+                type:'post',
+                dataType:"json",
+                success:function (result) {
+                    var list = result;
+                    $('#home').children().detach();
+                    $("#home").append("<tr><td>店铺id</td><td>店铺名称</td><td>店铺主题</td><td>店铺照片</td><td>品类类型</td><td>剩余数量</td><td>修改</td><td>删除</td></tr>")
+                    for (var i = 0; i < list.length; i++) {
+                        $("#home").append("<tr><td>"+list[i].foodId+"</td><td>"+list[i].foodName+"</td><td>"+list[i].subTitle+"</td><td>"+list[i].cover+"</td><td>"+list[i].categoryId+"</td><td>"+list[i].num+"</td><td><button id='update' type=\"button\" class=\"btn btn-primary\">修改</button></td><td><button id='delete' type=\"button\" class=\"btn btn-danger\">删除</button></td></tr>")
+                    }
+
+                }
+            })
+        }
+       a();
+
+        $(document).on('click','#delete',function (){
+            var id = $(this).parent().parent().children().eq(0).html()
+            alert(id);
+            $.ajax({
+                url:"/delete",
+                type:'post',
+                dataType:'text',
+                data: {foodId:id},
+                async:false,
+                success:function (result){
+                    alert(result);
+                    a();
+
+                }
+            })
+        })
+
+        $('#add').click(function (){
+            $('#addRenwu').modal("show");
+        })
+
+
+        $("#save").click(function (){
+            var foodName = $("#foodName").val();
+            var subTitle = $("#subTitle").val();
+            var cover = $("#cover").val();
+            var categoryId = $("#categoryId").val();
+            var num = $("#num").val();
+            $.ajax({
+                url:"/save",
+                type:'post',
+                dataType:'text',
+                data: {foodName:foodName,subTitle:subTitle,cover:cover,categoryId:categoryId,num:num},
+                async:false,
+                success:function (result){
+                    alert(result);
+                    $('#addRenwu').modal("hide")
+                    a();
+                }
+            })
+        })
+
+        $(document).on('click','#update',function (){
+            var id = $(this).parent().parent().children().eq(0).html()
+            $.ajax({
+                url:"/selectById",
+                type:'post',
+                dataType:'json',
+                data: {foodId:id},
+                async:false,
+                success:function (result){
+                        $("#xiugai").modal("show")
+                        $('#foodId').val(result.foodId)
+                        $('#subTitle1').val(result.subTitle)
+                        $('#foodName1').val(result.foodName)
+                        $('#cover1').val(result.cover)
+                        $('#categoryId1').val(result.categoryId)
+                        $('#num1').val(result.num)
+
+                    }
+
+                })
+
+        })
+
+        $("#save1").click(function (){
+            var foodId = $("#foodId").val();
+            var foodName = $("#foodName1").val();
+            var subTitle = $("#subTitle1").val();
+            var cover = $("#cover1").val();
+            var categoryId = $("#categoryId1").val();
+            var num = $("#num1").val();
+            $.ajax({
+                url:"/update",
+                type:'post',
+                dataType:'text',
+                data: {foodId:foodId,foodName:foodName,subTitle:subTitle,cover:cover,categoryId:categoryId,num:num},
+                async:false,
+                success:function (result){
+                    alert(result);
+                    $('#xiugai').modal("hide")
+                    a();
+                }
+            })
+        })
+
+
+
+
+
+        })
+
+
+
+</script>
+
+<script>
+    function uploadHead() {
+        var formData = new FormData();
+        var file = $('#file')[0].files[0];
+        formData.append("file",file);
+        $.ajax({
+            url:"/file/uploadFile",
+            async:true,
+            processData: false,   // jQuery不要去处理发送的数据
+            contentType: false,   // jQuery不要去设置Content-Type请求头
+            type:"POST",
+            data: formData,
+            success:function (data) {
+                alert("上传成功")
+            },
+            error:function () {
+                alert("更新失败");
+            },
+            dataType:"text"
+        });
+    }
+
+    function uploadHead1() {
+        var formData = new FormData();
+        var file = $('#file1')[0].files[0];
+        formData.append("file",file);
+        $.ajax({
+            url:"/file/uploadFile",
+            async:true,
+            processData: false,   // jQuery不要去处理发送的数据
+            contentType: false,   // jQuery不要去设置Content-Type请求头
+            type:"POST",
+            data: formData,
+            success:function (data) {
+                alert("上传成功")
+            },
+            error:function () {
+                alert("更新失败");
+            },
+            dataType:"text"
+        });
+    }
+
+</script>
+
+
+<div style="margin-left: 10%"><button type="button" class="btn btn-success" id="add">添加商家</button></div>
+<table class="table table-dark" id="home" style="width: 80%" align="center">
+
+</table>
+
+<div class="modal" tabindex="-1" id="addRenwu">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新增商家</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                    <ul>
+                        <li>商家名称<input type="text" name="foodName" id="foodName"></li>
+                        <li>商家标题<input type="text" name="subTitle" id="subTitle"></li>
+                        <li> <input type="file" name="multipartFile" class="fileInput" id="file" >
+                            <input type="button" onclick="uploadHead1();" value="上传"></li>
+                        <li>商家图片<input type="text" name="cover" id="cover"></li>
+                        <li>商家种类<input type="text" name="categoryId" id="categoryId"></li>
+                        <li>食物数量<input type="text" name="num" id="num"></li>
+                    </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="save">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" id="xiugai">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">修改商家</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="frmUpdate">
+                    <ul>
+                        <li>商家编号<input type="text" name="foodId" id="foodId" readonly></li>
+                        <li>商家名称<input type="text" name="foodName" id="foodName1"></li>
+                        <li>商家标题<input type="text" name="subTitle" id="subTitle1"></li>
+                        <li> <input type="file" name="multipartFile" class="fileInput" id="file1" >
+                            <input type="button" onclick="uploadHead1();" value="上传"></li>
+                        <li>商家图片<input type="text" name="cover" id="cover1"></li>
+                        <li>商家种类<input type="text" name="categoryId" id="categoryId1"></li>
+                        <li>食物数量<input type="text" name="num" id="num1"></li>
+                    </ul>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="save1">修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
